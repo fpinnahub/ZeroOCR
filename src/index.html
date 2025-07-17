@@ -134,7 +134,7 @@
       Trascina qui il file oppure clicca per selezionarlo
     </div>
 
-    <button onclick="uploadFile()">Estrai Testo</button>
+    <button id="extractBtn" onclick="uploadFile()">Estrai Testo</button>
 
     <div class="progress-bar" id="progressBar">
       <div class="progress-bar-inner" id="progressInner"></div>
@@ -218,6 +218,9 @@
       const previewImage = document.getElementById("previewImage");
       const previewLabel = document.getElementById("previewLabel");
 
+      // Disabilita il bottone all’inizio
+      extractBtn.disabled = true;
+
       if (!selectedFile) {
         alert("Seleziona o trascina un file prima di inviare.");
         return;
@@ -252,6 +255,9 @@
           setStatusMessage("Processing...");
           if (xhr.readyState === 4) {
             hideProgress();
+            extractBtn.disabled = false;  // Riabilita
+            setCursorBusy(false);
+            setStatusMessage("");
             if (xhr.status === 200) {
               const data = JSON.parse(xhr.responseText);
               output.value = data.text;
@@ -269,11 +275,9 @@
                 previewLabel.style.display = "block";
               }
 
-              setCursorBusy(false);
-              setStatusMessage("");
-
             } else {
               const error = JSON.parse(xhr.responseText);
+              setStatusMessage("Errore");
               output.value = "Errore: " + (error.detail || "Errore generico.");
             }
           }
@@ -285,6 +289,7 @@
       } catch (err) {
         hideProgress();
         setCursorBusy(false);
+        extractBtn.disabled = false;  // Riabilita
         setStatusMessage("Errore!");
         output.value = "Errore: " + err.message;
       }
