@@ -90,6 +90,8 @@
       <div class="progress-bar-inner" id="progressInner"></div>
     </div>
 
+    <p id="statusMessage" style="font-style: italic; margin-top: 1rem; color: #444;"></p>
+
     <div class="preview-label" id="previewLabel" style="display:none;">Anteprima immagine:</div>
     <img id="previewImage" style="display:none;" alt="Anteprima immagine caricata" />
 
@@ -141,6 +143,14 @@
       progressInner.style.width = "0%";
     }
 
+    function setCursorBusy(isBusy) {
+      document.body.style.cursor = isBusy ? "progress" : "default";
+    }
+
+    function setStatusMessage(message) {
+      document.getElementById("statusMessage").textContent = message || "";
+    }
+
     async function uploadFile() {
       const output = document.getElementById("output");
       const previewImage = document.getElementById("previewImage");
@@ -150,6 +160,9 @@
         alert("Seleziona o trascina un file prima di inviare.");
         return;
       }
+
+      setCursorBusy(true);
+      setStatusMessage("Uploading...");
 
       output.value = "Estrazione in corso...";
       previewImage.style.display = "none";
@@ -174,11 +187,13 @@
         };
 
         xhr.onreadystatechange = () => {
+          setStatusMessage("Processing...");
           if (xhr.readyState === 4) {
             hideProgress();
             if (xhr.status === 200) {
               const data = JSON.parse(xhr.responseText);
               output.value = data.text;
+              setStatusMessage("Done!");
 
               if (data.preview_image) {
                 previewImage.src = "data:image/png;base64," + data.preview_image;
@@ -192,6 +207,9 @@
                 previewLabel.style.display = "block";
               }
 
+              setCursorBusy(false);
+              setStatusMessage("");
+
             } else {
               const error = JSON.parse(xhr.responseText);
               output.value = "Errore: " + (error.detail || "Errore generico.");
@@ -204,6 +222,8 @@
 
       } catch (err) {
         hideProgress();
+        setCursorBusy(false);
+        setStatusMessage("Errore!");
         output.value = "Errore: " + err.message;
       }
     }
