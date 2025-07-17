@@ -1,0 +1,4 @@
+curl -X POST "http://127.0.0.1:8000/extract-text/"
+   -H "accept: application/json"
+   -H "Content-Type: multipart/form-data"
+   -F "file=@dat/img_test_1.png"
