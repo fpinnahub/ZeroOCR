@@ -103,3 +103,35 @@ app.add_middleware(
     allow_headers=["*"],
 )
 ```
+
+
+### 🐳 Running the Application with Docker
+You can run the entire project in a containerised environment using Docker. This allows for easy deployment and consistent behaviour across systems.
+
+### 🧱 1. Build the Docker image
+From the project root directory, run:
+
+```bash
+docker build -t zero-ocr-app .
+```
+This command will:
+
+- Install system dependencies (including Tesseract and Poppler)
+- Install all Python dependencies
+- Prepare the FastAPI server for production use
+
+### 🚀 2. Start the container
+Once built, run the container with:
+
+```bash
+docker run -d -p 8000:8000 --name zero-ocr-app my-zero-ocr
+```
+This will expose the application at http://localhost:8000.
+
+### 🛑 3. Stop the container (optional)
+To stop and remove the running container:
+
+```bash
+docker stop zero-ocr-app
+docker rm my-zero-ocr
+```
