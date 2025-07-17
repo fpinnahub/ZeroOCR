@@ -13,7 +13,7 @@
       background: white;
       padding: 2rem;
       border-radius: 10px;
-      max-width: 600px;
+      max-width: 700px;
       margin: auto;
       box-shadow: 0 2px 10px rgba(0,0,0,0.1);
     }
@@ -31,6 +31,17 @@
       font-size: 1rem;
       cursor: pointer;
     }
+    img {
+      display: block;
+      max-width: 100%;
+      max-height: 400px;
+      margin-top: 1rem;
+      border: 1px solid #ccc;
+    }
+    .preview-label {
+      margin-top: 1rem;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -39,6 +50,10 @@
     <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.tiff,.tif,.gif,.bmp,.pdf" />
     <br />
     <button onclick="uploadFile()">Estrai Testo</button>
+
+    <div class="preview-label" id="previewLabel" style="display:none;">Preview immagine:</div>
+    <img id="previewImage" style="display:none;" alt="Anteprima immagine caricata" />
+
     <textarea id="output" placeholder="Il testo OCR verrà mostrato qui..." readonly></textarea>
   </div>
 
@@ -46,6 +61,8 @@
     async function uploadFile() {
       const input = document.getElementById("fileInput");
       const output = document.getElementById("output");
+      const previewImage = document.getElementById("previewImage");
+      const previewLabel = document.getElementById("previewLabel");
       const file = input.files[0];
 
       if (!file) {
@@ -57,6 +74,16 @@
       formData.append("file", file);
 
       output.value = "Estrazione in corso...";
+      previewImage.style.display = "none";
+      previewLabel.style.display = "none";
+
+      // Mostra anteprima se è un'immagine
+      if (file.type.startsWith("image/")) {
+        const imageUrl = URL.createObjectURL(file);
+        previewImage.src = imageUrl;
+        previewImage.style.display = "block";
+        previewLabel.style.display = "block";
+      }
 
       try {
         const response = await fetch("http://127.0.0.1:8000/extract-text/", {
