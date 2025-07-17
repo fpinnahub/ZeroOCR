@@ -6,9 +6,18 @@ from fastapi.responses import JSONResponse
 from typing import List
 from PIL import Image
 from pdf2image import convert_from_bytes
+from fastapi.middleware.cors import CORSMiddleware
+
 
 
 app = FastAPI()
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Puoi restringerlo al tuo dominio se preferisci
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "tiff", "tif", "gif", "bmp", "pdf"}
 
