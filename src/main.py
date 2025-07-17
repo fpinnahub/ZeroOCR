@@ -1,3 +1,4 @@
+import os
 import pytesseract
 import io
 import base64
@@ -9,6 +10,8 @@ from PIL import Image
 from pdf2image import convert_from_bytes
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, Request
+from fastapi.responses import FileResponse
 
 
 app = FastAPI()
@@ -19,7 +22,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app.mount("/src/static", StaticFiles(directory="src/static"), name="static")
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+app.mount(
+    "/static",
+    StaticFiles(directory=os.path.join(BASE_DIR, "static")),
+    name="static"
+)
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "tiff", "tif", "gif", "bmp", "pdf"}
 
@@ -61,3 +69,9 @@ async def extract_text(file: UploadFile = File(...)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"OCR processing failed: {str(e)}")
+
+# Serving index.html as homepage
+@app.get("/", response_class=FileResponse)
+async def read_index():
+
+    return FileResponse(os.path.join(BASE_DIR, "index.html"), media_type="text/html")
