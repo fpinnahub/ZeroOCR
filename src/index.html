@@ -42,48 +42,90 @@
       margin-top: 1rem;
       font-weight: bold;
     }
+    .drop-area {
+      margin-top: 1rem;
+      padding: 2rem;
+      border: 2px dashed #999;
+      border-radius: 10px;
+      text-align: center;
+      color: #666;
+      background-color: #f9f9f9;
+      cursor: pointer;
+    }
+    .drop-area.hover {
+      background-color: #e3f2fd;
+      border-color: #2196f3;
+      color: #333;
+    }
   </style>
 </head>
 <body>
   <div class="container">
     <h2>OCR Client – FastAPI + pytesseract</h2>
-    <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.tiff,.tif,.gif,.bmp,.pdf" />
-    <br />
+
+    <input type="file" id="fileInput" accept=".jpg,.jpeg,.png,.tiff,.tif,.gif,.bmp,.pdf" style="display:none;" />
+
+    <div id="dropArea" class="drop-area">
+      Trascina qui il file oppure clicca per selezionarlo
+    </div>
+
     <button onclick="uploadFile()">Estrai Testo</button>
 
-    <div class="preview-label" id="previewLabel" style="display:none;">Preview immagine:</div>
+    <div class="preview-label" id="previewLabel" style="display:none;">Anteprima immagine:</div>
     <img id="previewImage" style="display:none;" alt="Anteprima immagine caricata" />
 
     <textarea id="output" placeholder="Il testo OCR verrà mostrato qui..." readonly></textarea>
   </div>
 
   <script>
+    const dropArea = document.getElementById("dropArea");
+    const fileInput = document.getElementById("fileInput");
+    let selectedFile = null;
+
+    dropArea.addEventListener("click", () => fileInput.click());
+
+    dropArea.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      dropArea.classList.add("hover");
+    });
+
+    dropArea.addEventListener("dragleave", () => {
+      dropArea.classList.remove("hover");
+    });
+
+    dropArea.addEventListener("drop", (e) => {
+      e.preventDefault();
+      dropArea.classList.remove("hover");
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        selectedFile = file;
+        dropArea.textContent = `File selezionato: ${file.name}`;
+      }
+    });
+
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files.length > 0) {
+        selectedFile = fileInput.files[0];
+        dropArea.textContent = `File selezionato: ${selectedFile.name}`;
+      }
+    });
+
     async function uploadFile() {
-      const input = document.getElementById("fileInput");
       const output = document.getElementById("output");
       const previewImage = document.getElementById("previewImage");
       const previewLabel = document.getElementById("previewLabel");
-      const file = input.files[0];
 
-      if (!file) {
-        alert("Seleziona un file prima di inviare.");
+      if (!selectedFile) {
+        alert("Seleziona o trascina un file prima di inviare.");
         return;
       }
 
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", selectedFile);
 
       output.value = "Estrazione in corso...";
       previewImage.style.display = "none";
       previewLabel.style.display = "none";
-
-      // Mostra anteprima se è un'immagine
-      if (file.type.startsWith("image/")) {
-        const imageUrl = URL.createObjectURL(file);
-        previewImage.src = imageUrl;
-        previewImage.style.display = "block";
-        previewLabel.style.display = "block";
-      }
 
       try {
         const response = await fetch("http://127.0.0.1:8000/extract-text/", {
@@ -99,16 +141,16 @@
         const data = await response.json();
         output.value = data.text;
 
-        // Se arriva un'immagine dal backend (PDF)
-        if (data.preview_image) {
+        if (data.preview_image) {Dra
+          // PDF preview in base64
           previewImage.src = "data:image/png;base64," + data.preview_image;
-          previewImage.style.display = "block";
-          previewLabel.style.display = "block";
-        }
-        // Altrimenti, usa URL.createObjectURL solo se è immagine (non PDF)
-        else if (file.type.startsWith("image/")) {
-          const imageUrl = URL.createObjectURL(file);
+        } else if (selectedFile.type.startsWith("image/")) {
+          // Image preview
+          const imageUrl = URL.createObjectURL(selectedFile);
           previewImage.src = imageUrl;
+        }
+
+        if (previewImage.src) {
           previewImage.style.display = "block";
           previewLabel.style.display = "block";
         }
