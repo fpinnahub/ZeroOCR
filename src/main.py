@@ -8,7 +8,7 @@ from typing import List
 from PIL import Image
 from pdf2image import convert_from_bytes
 from fastapi.middleware.cors import CORSMiddleware
-
+from fastapi.staticfiles import StaticFiles
 
 
 app = FastAPI()
@@ -19,6 +19,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.mount("/src/static", StaticFiles(directory="src/static"), name="static")
 
 ALLOWED_EXTENSIONS = {"jpg", "jpeg", "png", "tiff", "tif", "gif", "bmp", "pdf"}
 
